@@ -1,0 +1,633 @@
+/* =========================================
+   1. CSS VARIABLES & RESET
+   ========================================= */
+:root {
+    /* Colors */
+    --bg-primary: #0d0d0d;
+    --bg-secondary: #14141f;
+    --bg-tertiary: #1a1a2e;
+    --bg-hover: #1e1e32;
+    
+    --text-primary: #ffffff;
+    --text-secondary: #888888;
+    --text-muted: #555555;
+    
+    --accent-green: #7fff00;
+    --accent-red: #ff4747;
+    --accent-orange: #ffaa00;
+    
+    --border-color: #2a2a3e;
+    --border-hover: #3a3a4e;
+    
+    /* Spacing & Sizing */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-full: 9999px;
+    
+    /* Transitions */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.5;
+    overflow-x: hidden;
+}
+
+/* Utility Classes */
+.hidden { display: none !important; }
+
+/* =========================================
+   2. LAYOUT STRUCTURE
+   ========================================= */
+.app-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px;
+    position: relative;
+}
+
+.main-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 40px;
+    align-items: start;
+    margin-top: 30px;
+}
+
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding-top: 20px;
+}
+
+.right-panel {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    border: 1px solid var(--border-color);
+    height: fit-content;
+}
+
+/* =========================================
+   3. HEADER & GREETING
+   ========================================= */
+.header h1 {
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+}
+
+.month-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 20px;
+    margin-bottom: 24px;
+}
+
+#currentMonthLabel {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.avg-info {
+    background: var(--bg-tertiary);
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.avg-info span {
+    color: var(--accent-green);
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.quote {
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.7;
+    max-width: 400px;
+    margin-bottom: 20px;
+    font-style: italic;
+}
+
+/* =========================================
+   4. DOUGHNUT CHART & CONTROLS
+   ========================================= */
+.chart-wrapper {
+    position: relative;
+    width: 260px;
+    height: 260px;
+}
+
+.chart-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 5px 16px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    transition: all var(--transition-normal);
+}
+
+.status-badge.in {
+    background: rgba(127, 255, 0, 0.15);
+    color: var(--accent-green);
+}
+
+.status-badge.out {
+    background: rgba(255, 71, 71, 0.15);
+    color: var(--accent-red);
+}
+
+.timer {
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.label {
+    display: block;
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* Buttons */
+.btn-primary {
+    padding: 14px 40px;
+    border-radius: var(--radius-md);
+    border: none;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    letter-spacing: 0.5px;
+    width: 100%;
+    max-width: 260px;
+}
+
+.btn-primary.punch-in {
+    background: rgba(127, 255, 0, 0.15);
+    color: var(--accent-green);
+    border: 1px solid rgba(127, 255, 0, 0.3);
+}
+
+.btn-primary.punch-in:hover {
+    background: rgba(127, 255, 0, 0.25);
+    transform: translateY(-2px);
+}
+
+.btn-primary.punch-out {
+    background: rgba(255, 71, 71, 0.15);
+    color: var(--accent-red);
+    border: 1px solid rgba(255, 71, 71, 0.3);
+}
+
+.btn-primary.punch-out:hover {
+    background: rgba(255, 71, 71, 0.25);
+    transform: translateY(-2px);
+}
+
+/* Edit Section */
+.edit-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.edit-section label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.edit-section input[type="time"] {
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+    transition: border var(--transition-fast);
+}
+
+.edit-section input[type="time"]:focus {
+    border-color: var(--accent-green);
+}
+
+.edit-section button {
+    padding: 8px 16px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.edit-section button:hover {
+    background: var(--border-hover);
+    color: var(--text-primary);
+}
+
+/* =========================================
+   5. ATTENDANCE LIST (RIGHT PANEL)
+   ========================================= */
+.list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.list-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.nav-arrows {
+    display: flex;
+    gap: 8px;
+}
+
+.nav-arrows button {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.nav-arrows button:hover {
+    background: var(--border-hover);
+    color: var(--text-primary);
+}
+
+.attendance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 520px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+/* Custom Scrollbar */
+.attendance-list::-webkit-scrollbar { width: 4px; }
+.attendance-list::-webkit-scrollbar-track { background: transparent; }
+.attendance-list::-webkit-scrollbar-thumb { 
+    background: var(--border-color); 
+    border-radius: 4px; 
+}
+
+/* List Item */
+.attendance-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    border: 1px solid rgba(42, 42, 62, 0.5);
+    transition: all var(--transition-fast);
+}
+
+.attendance-item:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-hover);
+}
+
+.attendance-item.today {
+    border-color: rgba(127, 255, 0, 0.3);
+    background: rgba(127, 255, 0, 0.03);
+}
+
+.attendance-item.weekend {
+    opacity: 0.4;
+}
+
+.att-left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.att-date {
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: rgba(42, 42, 62, 0.6);
+    padding: 2px 10px;
+    border-radius: 6px;
+    width: fit-content;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.att-day {
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.att-times {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 12px;
+}
+
+.att-right {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    min-width: 80px;
+    justify-content: flex-end;
+}
+
+.att-hours {
+    font-size: 28px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.att-hours.green { color: var(--accent-green); }
+.att-hours.red { color: var(--accent-red); }
+
+.att-mins {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.att-hrs-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-left: 4px;
+}
+
+/* Weekend Separator */
+.weekend-separator {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 12px 0;
+    position: relative;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.weekend-separator::before,
+.weekend-separator::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 35%;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.weekend-separator::before { left: 0; }
+.weekend-separator::after { right: 0; }
+
+/* =========================================
+   6. SETTINGS MODAL
+   ========================================= */
+.settings-btn {
+    position: fixed;
+    top: 25px;
+    right: 30px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-normal);
+    z-index: 100;
+}
+
+.settings-btn:hover {
+    background: var(--border-hover);
+    color: var(--text-primary);
+    transform: rotate(90deg);
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+    opacity: 1;
+    transition: opacity var(--transition-normal);
+}
+
+.modal-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    width: 400px;
+    max-width: 90vw;
+    transform: scale(1);
+    transition: transform var(--transition-normal);
+}
+
+.modal-overlay.hidden .modal {
+    transform: scale(0.95);
+}
+
+.modal h3 {
+    font-size: 20px;
+    margin-bottom: 24px;
+    color: var(--text-primary);
+}
+
+.modal label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    margin-top: 16px;
+}
+
+.modal input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 15px;
+    outline: none;
+    transition: border var(--transition-fast);
+}
+
+.modal input:focus {
+    border-color: var(--accent-green);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+    justify-content: flex-end;
+}
+
+.modal-actions button {
+    padding: 10px 24px;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all var(--transition-fast);
+}
+
+.modal-actions button:first-child {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.modal-actions button:first-child:hover {
+    background: var(--border-hover);
+    color: var(--text-primary);
+}
+
+.modal-actions button:last-child {
+    background: var(--accent-green);
+    color: #000;
+}
+
+.modal-actions button:last-child:hover {
+    filter: brightness(0.9);
+}
+
+/* =========================================
+   7. TOAST NOTIFICATION
+   ========================================= */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    padding: 14px 28px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    color: var(--text-primary);
+    z-index: 300;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    white-space: nowrap;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast.success { border-color: rgba(127, 255, 0, 0.3); }
+.toast.error { border-color: rgba(255, 71, 71, 0.3); }
+
+/* =========================================
+   8. RESPONSIVE DESIGN
+   ========================================= */
+@media (max-width: 900px) {
+    .main-layout {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .app-container {
+        padding: 24px;
+    }
+    
+    .header h1 {
+        font-size: 32px;
+    }
+    
+    .chart-wrapper {
+        width: 220px;
+        height: 220px;
+    }
+    
+    .timer {
+        font-size: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .settings-btn {
+        top: 16px;
+        right: 16px;
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+    }
+    
+    .attendance-item {
+        padding: 14px 16px;
+    }
+    
+    .att-hours {
+        font-size: 24px;
+    }
+    
+    .right-panel {
+        padding: 16px;
+    }
+}
