@@ -74,7 +74,8 @@ body {
     border-radius: var(--radius-xl);
     width: 100%;
     height: calc(100vh - 80px);
-    min-height: 946px;
+    max-height: 946px;
+    min-height: 700px;
     display: flex;
     position: relative;
     overflow: hidden;
@@ -90,6 +91,7 @@ body {
     flex-direction: column;
     align-items: center;
     flex-shrink: 0;
+    overflow-y: auto;
 }
 
 /* Greeting Area */
@@ -125,9 +127,10 @@ body {
 .quote-text {
     font-size: 15px;
     line-height: 1.35;
-    color: var(--text-muted);
-    opacity: 0.6;
+    color: var(--text-white);
+    opacity: 0.7;
     font-style: italic;
+    max-width: 420px;
 }
 
 /* Timer Section */
@@ -294,6 +297,7 @@ body {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    overflow-y: auto;
 }
 
 .monthly-panel {
@@ -410,6 +414,7 @@ body {
     height: 76px;
     flex-shrink: 0;
     transition: all var(--transition-fast);
+    overflow: hidden;
 }
 
 .attendance-item:hover {
@@ -429,6 +434,8 @@ body {
     flex-direction: column;
     gap: 6px;
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .att-date-badge {
@@ -439,18 +446,25 @@ body {
     border-radius: 6px;
     width: fit-content;
     text-transform: capitalize;
+    white-space: nowrap;
 }
 
 .att-day-name {
     font-size: 20px;
     font-weight: 600;
     color: var(--text-white);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .att-times {
     font-size: 11px;
     color: var(--text-gray);
     opacity: 0.7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .att-divider {

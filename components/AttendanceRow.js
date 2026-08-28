@@ -42,6 +42,10 @@ const AttendanceRow = {
                 // Below 8 hours - red
                 hoursClass = 'red';
             }
+        } else {
+            // No duration - show dashes
+            hoursDisplay = '--';
+            minsDisplay = '--';
         }
         
         div.innerHTML = `
