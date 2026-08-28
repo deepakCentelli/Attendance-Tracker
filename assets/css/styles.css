@@ -364,6 +364,7 @@ body {
     font-size: 30px;
     font-weight: 600;
     color: var(--text-white);
+    width: 220px;
 }
 
 .avg-container {
@@ -397,6 +398,8 @@ body {
 .nav-arrows {
     display: flex;
     gap: 12px;
+    width: 220px;
+    justify-content: flex-end
 }
 
 .nav-btn {
