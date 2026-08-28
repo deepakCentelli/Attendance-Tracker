@@ -4,14 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance Tracker</title>
-    <!-- Link external CSS -->
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
-    <!-- Settings Button -->
     <button id="settingsBtn" class="settings-btn" aria-label="Settings">⚙️</button>
-
-    <!-- Settings Modal -->
+    
     <div id="settingsModal" class="modal-overlay hidden">
         <div class="modal">
             <h3>Settings</h3>
@@ -23,56 +20,65 @@
             </div>
         </div>
     </div>
-
+    
     <div class="app-container">
-        <header class="header">
-            <h1 id="greeting">Hey User</h1>
-            <div class="month-info">
-                <span id="currentMonthLabel">August</span>
-                <div class="avg-info">Avg: <span id="avgHours">0:00</span></div>
-            </div>
-        </header>
-
-        <main class="main-layout">
-            <!-- Left: Chart & Controls -->
-            <section class="left-panel">
-                <div class="chart-wrapper">
-                    <canvas id="doughnutChart" width="260" height="260"></canvas>
-                    <div class="chart-center">
-                        <span id="punchStatus" class="status-badge">Punched Out</span>
-                        <div id="timerDisplay" class="timer">00:00</div>
-                        <span class="label">hrs</span>
-                    </div>
+        <div class="dashboard-container">
+            <section class="left-section">
+                <div class="greeting-section">
+                    <h1 id="greeting" class="greeting-main">Hey User</h1>
+                    <p id="welcomeText" class="greeting-sub">Welcome Back</p>
                 </div>
                 
-                <button id="punchBtn" class="btn-primary">Punch In</button>
-                
-                <div id="editPunchSection" class="edit-section hidden">
-                    <label>Edit Start Time:</label>
-                    <input type="time" id="editTimeInput">
-                    <button id="saveEditBtn">Update</button>
+                <div class="quote-container">
+                    <p id="dailyQuote" class="quote-text"></p>
                 </div>
-            </section>
-
-            <!-- Right: List View -->
-            <section class="right-panel">
-                <div class="list-header">
-                    <h3 id="listMonthTitle">August 2026</h3>
-                    <div class="nav-arrows">
-                        <button id="prevMonth">◀</button>
-                        <button id="nextMonth">▶</button>
+                
+                <div class="timer-section">
+                    <div class="chart-wrapper">
+                        <canvas id="doughnutChart" width="340" height="340"></canvas>
+                        <div class="chart-center">
+                            <span id="punchStatus" class="status-badge">Punched Out</span>
+                            <div id="timerDisplay" class="timer-display">00:00</div>
+                            <span class="timer-unit">hrs</span>
+                        </div>
+                    </div>
+                    
+                    <div class="punch-buttons">
+                        <button id="punchBtn" class="btn-punch btn-punch-in">Punch In</button>
+                        <button id="punchOutBtn" class="btn-punch btn-punch-out hidden">Punch Out</button>
+                    </div>
+                    
+                    <div id="editPunchSection" class="edit-section hidden">
+                        <label>Edit Start Time:</label>
+                        <input type="time" id="editTimeInput">
+                        <button id="saveEditBtn">Update</button>
                     </div>
                 </div>
-                <div id="attendanceList" class="attendance-list">
-                    <!-- Items injected via JS -->
+            </section>
+            
+            <section class="right-section">
+                <div class="monthly-panel">
+                    <div class="monthly-header">
+                        <h2 id="monthTitle" class="month-title">August</h2>
+                        <div class="avg-container">
+                            <span class="avg-label">Avg Per Day</span>
+                            <span id="avgValue" class="avg-value">0:00</span>
+                        </div>
+                        <div class="nav-arrows">
+                            <button id="prevMonth" class="nav-btn">◀</button>
+                            <button id="nextMonth" class="nav-btn">▶</button>
+                        </div>
+                    </div>
+                    
+                    <div id="attendanceList" class="attendance-list"></div>
                 </div>
             </section>
-        </main>
+        </div>
     </div>
-
-    <!-- Load Scripts in Order -->
+    
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/storage.js"></script>
+    <script src="components/AttendanceRow.js"></script>
     <script src="assets/js/chart.js"></script>
     <script src="assets/js/main.js"></script>
 </body>

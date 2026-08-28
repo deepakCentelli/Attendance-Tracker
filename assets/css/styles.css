@@ -1,29 +1,38 @@
 /* =========================================
-   1. CSS VARIABLES & RESET
+   ATTENDANCE TRACKER - REFERENCE IMPLEMENTATION
+   Based on 1760 × 1026 px reference
    ========================================= */
+
+/* CSS Variables - Exact colors from spec */
 :root {
-    /* Colors */
-    --bg-primary: #0d0d0d;
-    --bg-secondary: #14141f;
-    --bg-tertiary: #1a1a2e;
-    --bg-hover: #1e1e32;
+    /* Core Color Palette */
+    --bg-page: #111214;
+    --bg-dashboard: #161719;
+    --bg-monthly-panel: #1C191F;
+    --bg-attendance-row: #232026;
+    --bg-doughnut-inactive: #212528;
+    --bg-green-status: #303A2E;
+    --bg-red-status: #2D1F21;
     
-    --text-primary: #ffffff;
-    --text-secondary: #888888;
-    --text-muted: #555555;
+    /* Text Colors */
+    --text-white: #FFFFFF;
+    --text-muted: #2F3032;
+    --text-gray: #888888;
     
-    --accent-green: #7fff00;
-    --accent-red: #ff4747;
-    --accent-orange: #ffaa00;
+    /* Accent Colors */
+    --accent-green: #B4FE61;
+    --accent-red: #FF6262;
+    --accent-yellow: #F4D35E;
     
-    --border-color: #2a2a3e;
-    --border-hover: #3a3a4e;
+    /* Borders */
+    --border-green: rgba(180, 254, 97, 0.3);
+    --border-red: #663538;
     
-    /* Spacing & Sizing */
+    /* Sizing */
     --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 20px;
+    --radius-md: 13px;
+    --radius-lg: 28px;
+    --radius-xl: 30px;
     --radius-full: 9999px;
     
     /* Transitions */
@@ -38,9 +47,9 @@
 }
 
 body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-page);
+    color: var(--text-white);
     min-height: 100vh;
     line-height: 1.5;
     overflow-x: hidden;
@@ -50,92 +59,96 @@ body {
 .hidden { display: none !important; }
 
 /* =========================================
-   2. LAYOUT STRUCTURE
+   MAIN DASHBOARD CONTAINER
    ========================================= */
 .app-container {
-    max-width: 1200px;
+    max-width: 1760px;
     margin: 0 auto;
-    padding: 40px;
+    padding: 40px 46px;
     position: relative;
+    min-height: 100vh;
 }
 
-.main-layout {
-    display: grid;
-    grid-template-columns: 1fr 1.6fr;
-    gap: 40px;
-    align-items: start;
-    margin-top: 30px;
+.dashboard-container {
+    background: var(--bg-dashboard);
+    border-radius: var(--radius-xl);
+    width: 100%;
+    height: calc(100vh - 80px);
+    min-height: 946px;
+    display: flex;
+    position: relative;
+    overflow: hidden;
 }
 
-.left-panel {
+/* =========================================
+   LEFT SECTION
+   ========================================= */
+.left-section {
+    width: 540px;
+    padding: 140px 80px 0 80px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 24px;
-    padding-top: 20px;
+    flex-shrink: 0;
 }
 
-.right-panel {
-    background: var(--bg-secondary);
-    border-radius: var(--radius-xl);
-    padding: 24px;
-    border: 1px solid var(--border-color);
-    height: fit-content;
+/* Greeting Area */
+.greeting-section {
+    text-align: left;
+    width: 100%;
+    margin-bottom: 40px;
 }
 
-/* =========================================
-   3. HEADER & GREETING
-   ========================================= */
-.header h1 {
-    font-size: 42px;
+.greeting-main {
+    font-size: 60px;
     font-weight: 700;
-    letter-spacing: -0.5px;
-    margin-bottom: 4px;
+    color: var(--text-white);
+    line-height: 1.05;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
 }
 
-.month-info {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-top: 20px;
-    margin-bottom: 24px;
-}
-
-#currentMonthLabel {
+.greeting-sub {
     font-size: 24px;
-    font-weight: 600;
+    font-weight: 500;
+    color: var(--text-white);
+    opacity: 0.9;
 }
 
-.avg-info {
-    background: var(--bg-tertiary);
-    padding: 8px 16px;
-    border-radius: var(--radius-md);
-    font-size: 13px;
-    color: var(--text-secondary);
+/* Motivational Quote */
+.quote-container {
+    width: 100%;
+    max-width: 450px;
+    margin-bottom: 60px;
 }
 
-.avg-info span {
-    color: var(--accent-green);
-    font-weight: 700;
+.quote-text {
     font-size: 15px;
-}
-
-.quote {
+    line-height: 1.35;
     color: var(--text-muted);
-    font-size: 13px;
-    line-height: 1.7;
-    max-width: 400px;
-    margin-bottom: 20px;
+    opacity: 0.6;
     font-style: italic;
 }
 
-/* =========================================
-   4. DOUGHNUT CHART & CONTROLS
-   ========================================= */
+/* Timer Section */
+.timer-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: auto;
+    margin-bottom: 80px;
+}
+
 .chart-wrapper {
     position: relative;
-    width: 260px;
-    height: 260px;
+    width: 340px;
+    height: 340px;
+    margin-bottom: 40px;
+}
+
+#doughnutChart {
+    width: 100%;
+    height: 100%;
 }
 
 .chart-center {
@@ -144,152 +157,211 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
-    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .status-badge {
     display: inline-block;
-    padding: 5px 16px;
+    width: 110px;
+    height: 38px;
+    line-height: 38px;
     border-radius: var(--radius-full);
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
-    margin-bottom: 8px;
-    transition: all var(--transition-normal);
-}
-
-.status-badge.in {
-    background: rgba(127, 255, 0, 0.15);
+    background: var(--bg-green-status);
     color: var(--accent-green);
+    transition: all var(--transition-normal);
 }
 
 .status-badge.out {
-    background: rgba(255, 71, 71, 0.15);
+    background: var(--bg-red-status);
     color: var(--accent-red);
 }
 
-.timer {
-    font-size: 48px;
-    font-weight: 700;
-    line-height: 1.1;
+.timer-display {
+    font-size: 64px;
+    font-weight: 600;
+    color: var(--text-white);
+    line-height: 1;
     font-variant-numeric: tabular-nums;
+    letter-spacing: -2px;
 }
 
-.label {
-    display: block;
+.timer-unit {
+    font-size: 22px;
+    color: var(--text-white);
+    opacity: 0.7;
+}
+
+/* Punch Buttons */
+.punch-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.btn-punch {
+    width: 110px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
     font-size: 14px;
-    color: var(--text-secondary);
-    margin-top: 4px;
-}
-
-/* Buttons */
-.btn-primary {
-    padding: 14px 40px;
-    border-radius: var(--radius-md);
-    border: none;
-    font-size: 16px;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
-    transition: all var(--transition-normal);
-    letter-spacing: 0.5px;
-    width: 100%;
-    max-width: 260px;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.btn-primary.punch-in {
-    background: rgba(127, 255, 0, 0.15);
+.btn-punch-in {
+    background: var(--bg-green-status);
     color: var(--accent-green);
-    border: 1px solid rgba(127, 255, 0, 0.3);
+    border-color: var(--border-green);
 }
 
-.btn-primary.punch-in:hover {
-    background: rgba(127, 255, 0, 0.25);
+.btn-punch-in:hover {
+    background: rgba(48, 58, 46, 0.8);
     transform: translateY(-2px);
 }
 
-.btn-primary.punch-out {
-    background: rgba(255, 71, 71, 0.15);
+.btn-punch-out {
+    background: var(--bg-red-status);
     color: var(--accent-red);
-    border: 1px solid rgba(255, 71, 71, 0.3);
+    border-color: var(--border-red);
 }
 
-.btn-primary.punch-out:hover {
-    background: rgba(255, 71, 71, 0.25);
+.btn-punch-out:hover {
+    background: rgba(45, 31, 33, 0.8);
     transform: translateY(-2px);
 }
 
-/* Edit Section */
+.btn-punch:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Edit Time Section */
 .edit-section {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-top: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
+    margin-top: 16px;
 }
 
 .edit-section label {
     font-size: 12px;
-    color: var(--text-secondary);
+    color: var(--text-gray);
 }
 
 .edit-section input[type="time"] {
-    padding: 8px 12px;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
+    padding: 6px 10px;
+    background: var(--bg-monthly-panel);
+    border: 1px solid var(--border-green);
     border-radius: var(--radius-sm);
-    color: var(--text-primary);
-    font-size: 14px;
+    color: var(--text-white);
+    font-size: 13px;
     outline: none;
-    transition: border var(--transition-fast);
-}
-
-.edit-section input[type="time"]:focus {
-    border-color: var(--accent-green);
 }
 
 .edit-section button {
-    padding: 8px 16px;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    background: var(--bg-green-status);
+    border: 1px solid var(--border-green);
     border-radius: var(--radius-sm);
-    color: var(--text-secondary);
+    color: var(--accent-green);
     font-size: 12px;
     cursor: pointer;
     transition: all var(--transition-fast);
 }
 
 .edit-section button:hover {
-    background: var(--border-hover);
-    color: var(--text-primary);
+    opacity: 0.8;
 }
 
 /* =========================================
-   5. ATTENDANCE LIST (RIGHT PANEL)
+   RIGHT SECTION - MONTHLY PANEL
    ========================================= */
-.list-header {
+.right-section {
+    flex: 1;
+    padding: 102px 80px 80px 60px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.monthly-panel {
+    background: var(--bg-monthly-panel);
+    border-radius: var(--radius-lg);
+    padding: 22px 28px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Monthly Header */
+.monthly-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.list-header h3 {
-    font-size: 18px;
+.month-title {
+    font-size: 30px;
     font-weight: 600;
+    color: var(--text-white);
+}
+
+.avg-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.avg-label {
+    font-size: 11px;
+    color: var(--text-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.avg-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent-green);
+}
+
+.avg-value.yellow {
+    color: var(--accent-yellow);
+}
+
+.avg-value.red {
+    color: var(--accent-red);
 }
 
 .nav-arrows {
     display: flex;
-    gap: 8px;
+    gap: 12px;
 }
 
-.nav-arrows button {
-    width: 36px;
-    height: 36px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border-color);
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
+.nav-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-gray);
     cursor: pointer;
     font-size: 14px;
     display: flex;
@@ -298,149 +370,174 @@ body {
     transition: all var(--transition-fast);
 }
 
-.nav-arrows button:hover {
-    background: var(--border-hover);
-    color: var(--text-primary);
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-white);
 }
 
+/* Attendance List */
 .attendance-list {
+    flex: 1;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    max-height: 520px;
-    overflow-y: auto;
+    gap: 14px;
     padding-right: 8px;
 }
 
 /* Custom Scrollbar */
-.attendance-list::-webkit-scrollbar { width: 4px; }
-.attendance-list::-webkit-scrollbar-track { background: transparent; }
-.attendance-list::-webkit-scrollbar-thumb { 
-    background: var(--border-color); 
-    border-radius: 4px; 
+.attendance-list::-webkit-scrollbar {
+    width: 4px;
 }
 
-/* List Item */
+.attendance-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.attendance-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+/* Attendance Row */
 .attendance-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: var(--bg-tertiary);
+    background: var(--bg-attendance-row);
     border-radius: var(--radius-md);
-    padding: 16px 20px;
-    border: 1px solid rgba(42, 42, 62, 0.5);
+    padding: 18px 24px;
+    height: 76px;
+    flex-shrink: 0;
     transition: all var(--transition-fast);
 }
 
 .attendance-item:hover {
-    border-color: var(--border-hover);
-    background: var(--bg-hover);
+    background: rgba(35, 32, 38, 0.8);
 }
 
 .attendance-item.today {
-    border-color: rgba(127, 255, 0, 0.3);
-    background: rgba(127, 255, 0, 0.03);
+    border: 1px solid rgba(180, 254, 97, 0.2);
 }
 
 .attendance-item.weekend {
-    opacity: 0.4;
+    opacity: 0.5;
 }
 
 .att-left {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    flex: 1;
 }
 
-.att-date {
+.att-date-badge {
     font-size: 11px;
-    color: var(--text-secondary);
-    background: rgba(42, 42, 62, 0.6);
-    padding: 2px 10px;
+    color: var(--text-gray);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 3px 10px;
     border-radius: 6px;
     width: fit-content;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    text-transform: capitalize;
 }
 
-.att-day {
-    font-size: 17px;
+.att-day-name {
+    font-size: 20px;
     font-weight: 600;
+    color: var(--text-white);
 }
 
 .att-times {
     font-size: 11px;
-    color: var(--text-muted);
-    display: flex;
-    gap: 12px;
+    color: var(--text-gray);
+    opacity: 0.7;
+}
+
+.att-divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 24px;
+    flex-shrink: 0;
 }
 
 .att-right {
     display: flex;
     align-items: baseline;
-    gap: 4px;
-    min-width: 80px;
+    gap: 6px;
+    min-width: 100px;
     justify-content: flex-end;
 }
 
 .att-hours {
-    font-size: 28px;
-    font-weight: 700;
+    font-size: 27px;
+    font-weight: 600;
+    color: var(--text-white);
     font-variant-numeric: tabular-nums;
 }
 
-.att-hours.green { color: var(--accent-green); }
-.att-hours.red { color: var(--accent-red); }
+.att-hours.green {
+    color: var(--accent-green);
+}
 
-.att-mins {
-    font-size: 14px;
-    color: var(--text-secondary);
-    font-variant-numeric: tabular-nums;
+.att-hours.yellow {
+    color: var(--accent-yellow);
+}
+
+.att-hours.red {
+    color: var(--accent-red);
 }
 
 .att-hrs-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-left: 4px;
+    font-size: 14px;
+    color: var(--text-gray);
 }
 
 /* Weekend Separator */
 .weekend-separator {
-    text-align: center;
-    font-size: 12px;
-    color: var(--text-muted);
-    padding: 12px 0;
-    position: relative;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px 0;
+    flex-shrink: 0;
 }
 
 .weekend-separator::before,
 .weekend-separator::after {
     content: '';
-    position: absolute;
-    top: 50%;
-    width: 35%;
+    flex: 1;
     height: 1px;
-    background: var(--border-color);
+    background: rgba(255, 255, 255, 0.1);
 }
 
-.weekend-separator::before { left: 0; }
-.weekend-separator::after { right: 0; }
+.weekend-label {
+    font-size: 12px;
+    color: var(--text-gray);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* No Attendance State */
+.no-attendance {
+    font-size: 13px;
+    color: var(--text-gray);
+    font-style: italic;
+}
 
 /* =========================================
-   6. SETTINGS MODAL
+   SETTINGS MODAL
    ========================================= */
 .settings-btn {
     position: fixed;
     top: 25px;
     right: 30px;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
+    background: var(--bg-monthly-panel);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-gray);
     width: 44px;
     height: 44px;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 20px;
     display: flex;
@@ -451,14 +548,17 @@ body {
 }
 
 .settings-btn:hover {
-    background: var(--border-hover);
-    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-white);
     transform: rotate(90deg);
 }
 
 .modal-overlay {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: rgba(0, 0, 0, 0.75);
     z-index: 200;
     display: flex;
@@ -475,8 +575,8 @@ body {
 }
 
 .modal {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
+    background: var(--bg-monthly-panel);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-lg);
     padding: 32px;
     width: 400px;
@@ -492,13 +592,13 @@ body {
 .modal h3 {
     font-size: 20px;
     margin-bottom: 24px;
-    color: var(--text-primary);
+    color: var(--text-white);
 }
 
 .modal label {
     display: block;
     font-size: 13px;
-    color: var(--text-secondary);
+    color: var(--text-gray);
     margin-bottom: 8px;
     margin-top: 16px;
 }
@@ -506,10 +606,10 @@ body {
 .modal input {
     width: 100%;
     padding: 12px 16px;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
+    background: var(--bg-page);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-sm);
-    color: var(--text-primary);
+    color: var(--text-white);
     font-size: 15px;
     outline: none;
     transition: border var(--transition-fast);
@@ -537,14 +637,14 @@ body {
 }
 
 .modal-actions button:first-child {
-    background: var(--bg-secondary);
-    color: var(--text-secondary);
-    border: 1px solid var(--border-color);
+    background: var(--bg-dashboard);
+    color: var(--text-gray);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .modal-actions button:first-child:hover {
-    background: var(--border-hover);
-    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-white);
 }
 
 .modal-actions button:last-child {
@@ -557,19 +657,19 @@ body {
 }
 
 /* =========================================
-   7. TOAST NOTIFICATION
+   TOAST NOTIFICATION
    ========================================= */
 .toast {
     position: fixed;
     bottom: 30px;
     left: 50%;
     transform: translateX(-50%) translateY(100px);
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
+    background: var(--bg-monthly-panel);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 14px 28px;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     font-size: 14px;
-    color: var(--text-primary);
+    color: var(--text-white);
     z-index: 300;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
@@ -580,54 +680,59 @@ body {
     transform: translateX(-50%) translateY(0);
 }
 
-.toast.success { border-color: rgba(127, 255, 0, 0.3); }
-.toast.error { border-color: rgba(255, 71, 71, 0.3); }
+.toast.success {
+    border-color: rgba(180, 254, 97, 0.3);
+}
+
+.toast.error {
+    border-color: rgba(255, 98, 98, 0.3);
+}
 
 /* =========================================
-   8. RESPONSIVE DESIGN
+   RESPONSIVE DESIGN
    ========================================= */
-@media (max-width: 900px) {
-    .main-layout {
-        grid-template-columns: 1fr;
-        gap: 30px;
-    }
-    
+@media (max-width: 1400px) {
     .app-container {
-        padding: 24px;
+        padding: 30px;
     }
     
-    .header h1 {
-        font-size: 32px;
+    .dashboard-container {
+        height: auto;
+        min-height: auto;
+        flex-direction: column;
     }
     
-    .chart-wrapper {
-        width: 220px;
-        height: 220px;
+    .left-section {
+        width: 100%;
+        padding: 60px 40px;
     }
     
-    .timer {
-        font-size: 40px;
+    .right-section {
+        padding: 40px;
     }
 }
 
-@media (max-width: 480px) {
-    .settings-btn {
-        top: 16px;
-        right: 16px;
-        width: 38px;
-        height: 38px;
-        font-size: 18px;
+@media (max-width: 768px) {
+    .greeting-main {
+        font-size: 42px;
+    }
+    
+    .chart-wrapper {
+        width: 280px;
+        height: 280px;
+    }
+    
+    .timer-display {
+        font-size: 48px;
+    }
+    
+    .monthly-header {
+        flex-wrap: wrap;
+        gap: 16px;
     }
     
     .attendance-item {
-        padding: 14px 16px;
-    }
-    
-    .att-hours {
-        font-size: 24px;
-    }
-    
-    .right-panel {
+        height: auto;
         padding: 16px;
     }
 }
