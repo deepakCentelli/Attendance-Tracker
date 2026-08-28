@@ -18,7 +18,12 @@ const AttendanceRow = {
         if (inTime && outTime) {
             timesHtml = `Login: ${Utils.formatTime12(inTime)} | Logout: ${Utils.formatTime12(outTime)}`;
         } else if (inTime && !outTime) {
-            timesHtml = `Login: ${Utils.formatTime12(inTime)} | Logout: --:--`;
+            // Currently punched in - show expected logout
+            const targetMinutes = (targetHours || 8.5) * 60;
+            const punchIn = new Date(inTime);
+            const expectedLogout = new Date(punchIn.getTime() + targetMinutes * 60 * 1000);
+            const expectedLogoutStr = Utils.formatTime12(expectedLogout.toISOString());
+            timesHtml = `Login: ${Utils.formatTime12(inTime)} | Expected: ${expectedLogoutStr}`;
         } else {
             timesHtml = '<span class="no-attendance">No attendance</span>';
         }

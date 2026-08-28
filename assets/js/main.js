@@ -172,6 +172,7 @@ async function handleEditTime() {
     appState.punchIn = newPunchIn.toISOString();
     await Storage.saveData(appState);
     renderUI();
+    startLiveUpdates();
     showToast('Start time updated', 'success');
 }
 
@@ -400,7 +401,7 @@ function updateCurrentDayInList() {
         hoursEl.textContent = `${hours}:${minutes}`;
         hoursEl.className = 'att-hours'; // Reset classes
         
-        const targetMinutes = (settings.targetHours || 8) * 60;
+        const targetMinutes = (settings.targetHours || 8.5) * 60;
         if (duration.totalMinutes >= targetMinutes) {
             hoursEl.classList.add('green');
         } else if (duration.totalMinutes > 480 && duration.totalMinutes < targetMinutes) {
@@ -413,7 +414,18 @@ function updateCurrentDayInList() {
     // Update the times display
     const timesEl = todayItem.querySelector('.att-times');
     if (timesEl && appState.punchIn) {
-        timesEl.innerHTML = `Login: ${Utils.formatTime12(appState.punchIn)} | Logout: --:--`;
+        // Calculate expected logout time
+        const targetMinutes = (settings.targetHours || 8.5) * 60;
+        const punchIn = new Date(appState.punchIn);
+        const expectedLogout = new Date(punchIn.getTime() + targetMinutes * 60 * 1000);
+        const expectedLogoutStr = Utils.formatTime12(expectedLogout.toISOString());
+        
+        // Check if target reached
+        const displayLogout = duration.totalMinutes >= targetMinutes 
+            ? 'Target Reached!' 
+            : Utils.formatTime12(expectedLogout.toISOString());
+        
+        timesEl.innerHTML = `Login: ${Utils.formatTime12(appState.punchIn)} | Expected Logout: ${displayLogout}`;
     }
 }
 
@@ -434,6 +446,10 @@ async function handleSaveSettings() {
     await Storage.saveSettings(settings);
     closeModal();
     renderUI();
+    // If currently punched in, restart live updates to reflect new target
+    if (appState.punchIn) {
+        startLiveUpdates();
+    }
     showToast('Settings saved', 'success');
 }
 
@@ -502,6 +518,7 @@ function renderUI() {
     const punchOutBtn = document.getElementById('punchOutBtn');
     const punchStatus = document.getElementById('punchStatus');
     const editSection = document.getElementById('editPunchSection');
+    const expectedLogoutSection = document.getElementById('expectedLogoutSection');
     
     if (appState.punchIn) {
         punchBtn.classList.add('hidden');
@@ -511,6 +528,7 @@ function renderUI() {
         punchStatus.innerHTML = `Punched In<br><span style="font-size: 12px; font-weight: 400; opacity: 0.8;">${punchInTime}</span>`;
         punchStatus.className = 'status-badge';
         editSection.classList.remove('hidden');
+        expectedLogoutSection.classList.remove('hidden');
         startTimer();
         startLiveUpdates();
     } else {
@@ -519,6 +537,7 @@ function renderUI() {
         punchStatus.textContent = 'Punched Out';
         punchStatus.className = 'status-badge out';
         editSection.classList.add('hidden');
+        expectedLogoutSection.classList.add('hidden');
         if (timerInterval) clearInterval(timerInterval);
         stopLiveUpdates();
     }
@@ -540,13 +559,17 @@ function updateChart() {
     let percentage = 0;
     let color = '#B4FE61';
     
-    // Target is 8 hours 30 minutes = 510 minutes
-    const targetMinutes = 510;
+    // Use settings target hours for calculation
+    const targetHours = settings.targetHours || 8.5;
+    const targetMinutes = targetHours * 60;
     
     if (appState.punchIn) {
         // Currently punched in - calculate from punch-in time
         const duration = Utils.calculateDuration(appState.punchIn, new Date());
         percentage = (duration.totalMinutes / targetMinutes) * 100;
+        
+        // Calculate and display expected logout time
+        updateExpectedLogoutTime(appState.punchIn, targetMinutes);
     } else if (todayRecord && todayRecord.in) {
         // Already punched out today - use recorded duration
         const duration = Utils.calculateDuration(todayRecord.in, todayRecord.out);
@@ -557,6 +580,29 @@ function updateChart() {
     const displayPercentage = Math.min(percentage, 100);
     
     ChartRenderer.draw('doughnutChart', displayPercentage, color);
+}
+
+function updateExpectedLogoutTime(punchInTime, targetMinutes) {
+    const punchIn = new Date(punchInTime);
+    const expectedLogout = new Date(punchIn.getTime() + targetMinutes * 60 * 1000);
+    const expectedLogoutStr = Utils.formatTime12(expectedLogout.toISOString());
+    
+    const expectedLogoutEl = document.getElementById('expectedLogoutTime');
+    const expectedLogoutSection = document.getElementById('expectedLogoutSection');
+    
+    if (expectedLogoutEl && expectedLogoutSection) {
+        expectedLogoutEl.textContent = expectedLogoutStr;
+        
+        // Check if target has been reached
+        const now = new Date();
+        const duration = Utils.calculateDuration(punchInTime, now);
+        if (duration.totalMinutes >= targetMinutes) {
+            expectedLogoutEl.textContent = 'Target Reached!';
+            expectedLogoutEl.classList.add('target-reached');
+        } else {
+            expectedLogoutEl.classList.remove('target-reached');
+        }
+    }
 }
 
 function updateMonthInfo() {
