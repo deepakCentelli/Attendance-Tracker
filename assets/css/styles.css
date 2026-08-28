@@ -485,6 +485,23 @@ body {
     justify-content: flex-end;
 }
 
+.edit-att-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 8px;
+    margin-left: 8px;
+    opacity: 0.6;
+    transition: all var(--transition-fast);
+    border-radius: 4px;
+}
+
+.edit-att-btn:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+}
+
 .att-hours {
     font-size: 27px;
     font-weight: 600;
@@ -672,9 +689,57 @@ body {
     filter: brightness(0.9);
 }
 
-/* =========================================
-   TOAST NOTIFICATION
-   ========================================= */
+/* Edit Attendance Modal */
+#editAttendanceModal .modal {
+    width: 450px;
+}
+
+.edit-type-selector {
+    margin-bottom: 20px;
+}
+
+.edit-type-btn {
+    flex: 1;
+    padding: 10px 16px;
+    background: var(--bg-page);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    color: var(--text-gray);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.edit-type-btn:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-white);
+}
+
+.edit-type-btn.active {
+    background: var(--bg-green-status);
+    border-color: var(--border-green);
+    color: var(--accent-green);
+}
+
+.modal input[type="time"] {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-page);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    color: var(--text-white);
+    font-size: 15px;
+    outline: none;
+    transition: border var(--transition-fast);
+    margin-bottom: 16px;
+}
+
+.modal input[type="time"]:focus {
+    border-color: var(--accent-green);
+}
+
+/* Toast notification styles already exist */
 .toast {
     position: fixed;
     bottom: 30px;

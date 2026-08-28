@@ -1,6 +1,6 @@
 // AttendanceRow Component - Reference Implementation
 const AttendanceRow = {
-    create(dateStr, record, isToday, targetHours) {
+    create(dateStr, record, isToday, targetHours, punchInTime) {
         const dateObj = new Date(dateStr);
         const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
         const dateBadge = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
@@ -48,6 +48,9 @@ const AttendanceRow = {
             minsDisplay = '--';
         }
         
+        // Edit button HTML
+        const editButtonHtml = `<button class="edit-att-btn" data-date="${dateStr}" aria-label="Edit attendance">✏️</button>`;
+        
         div.innerHTML = `
             <div class="att-left">
                 <span class="att-date-badge">${dateBadge}</span>
@@ -58,6 +61,7 @@ const AttendanceRow = {
             <div class="att-right">
                 <span class="att-hours ${hoursClass}">${hoursDisplay}:${minsDisplay}</span>
                 <span class="att-hrs-label">hrs</span>
+                ${editButtonHtml}
             </div>
         `;
         
