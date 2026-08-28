@@ -64,15 +64,22 @@ export async function getSettings() {
 
 export async function saveSettings(settings) {
     try {
-        await sql`
-            INSERT INTO settings (user_name, target_hours)
-            VALUES (${settings.name}, ${settings.targetHours})
-            ON CONFLICT (id) DO UPDATE SET
-                user_name = EXCLUDED.user_name,
-                target_hours = EXCLUDED.target_hours,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE settings.id = (SELECT id FROM settings ORDER BY id DESC LIMIT 1)
-        `;
+        const existing = await sql`SELECT id FROM settings ORDER BY id DESC LIMIT 1`;
+        
+        if (existing.length > 0) {
+            await sql`
+                UPDATE settings 
+                SET user_name = ${settings.name},
+                    target_hours = ${settings.targetHours},
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ${existing[0].id}
+            `;
+        } else {
+            await sql`
+                INSERT INTO settings (user_name, target_hours)
+                VALUES (${settings.name}, ${settings.targetHours})
+            `;
+        }
         console.log('Settings saved successfully');
     } catch (error) {
         console.error('Error saving settings:', error);
