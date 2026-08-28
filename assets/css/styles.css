@@ -179,6 +179,7 @@ body {
     background: var(--bg-green-status);
     color: var(--accent-green);
     transition: all var(--transition-normal);
+   margin-bottom: 25px;
 }
 
 .status-badge.out {
