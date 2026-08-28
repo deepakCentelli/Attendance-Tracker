@@ -40,8 +40,14 @@
                         <canvas id="doughnutChart" width="340" height="340"></canvas>
                         <div class="chart-center">
                             <span id="punchStatus" class="status-badge">Punched Out</span>
-                            <div id="timerDisplay" class="timer-display">00:00</div>
-                            <span class="timer-unit">hrs</span>
+                            <div class="timer-wrapper">
+                                <div id="timerDisplay" class="timer-display">00:00</div>
+                                <span class="timer-unit">hrs</span>
+                            </div>
+                            <div id="expectedLogoutSection" class="expected-logout-section hidden">
+                                <span class="expected-logout-label">Expected Logout</span>
+                                <span id="expectedLogoutTime" class="expected-logout-time">--:--</span>
+                            </div>
                         </div>
                     </div>
                     
