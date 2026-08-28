@@ -7,7 +7,7 @@ let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let timerInterval = null;
 
-// 31 motivational quotes (one for each day)
+// 31 motivational quotes (one for each day) - kept to 2-3 lines
 const MOTIVATIONAL_QUOTES = [
     "Success is not final, failure is not fatal: it is the courage to continue that counts.",
     "The only way to do great work is to love what you do.",
@@ -159,25 +159,32 @@ function handleEditTime() {
 }
 
 function handleSaveSettings() {
+    const usernameInput = document.getElementById('usernameInput');
     const targetHoursInput = document.getElementById('targetHoursInput');
+    const username = usernameInput.value.trim();
     const targetHours = parseFloat(targetHoursInput.value);
+    
+    if (username && username.length > 0) {
+        settings.name = username;
+    }
     
     if (targetHours && targetHours > 0 && targetHours <= 24) {
         settings.targetHours = targetHours;
-        Storage.saveSettings(settings);
-        closeModal();
-        renderUI();
-        showToast('Settings saved', 'success');
-    } else {
-        showToast('Please enter valid hours (1-24)', 'error');
     }
+    
+    Storage.saveSettings(settings);
+    closeModal();
+    renderUI();
+    showToast('Settings saved', 'success');
 }
 
 function openModal() {
     const modal = document.getElementById('settingsModal');
+    const usernameInput = document.getElementById('usernameInput');
     const targetHoursInput = document.getElementById('targetHoursInput');
     
-    if (modal && targetHoursInput) {
+    if (modal && usernameInput && targetHoursInput) {
+        usernameInput.value = settings.name || 'User';
         targetHoursInput.value = settings.targetHours || 8;
         modal.classList.remove('hidden');
     }
@@ -201,6 +208,7 @@ function changeMonth(delta) {
         currentYear++;
     }
     
+    updateMonthInfo();
     renderAttendanceList();
 }
 
@@ -208,7 +216,10 @@ function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
     
     updateTimerDisplay();
-    timerInterval = setInterval(updateTimerDisplay, 1000);
+    timerInterval = setInterval(() => {
+        updateTimerDisplay();
+        updateChart();
+    }, 1000);
 }
 
 function updateTimerDisplay() {
@@ -268,20 +279,23 @@ function updateChart() {
     let percentage = 0;
     let color = '#B4FE61';
     
-    if (todayRecord && todayRecord.in) {
-        const targetMinutes = (settings.targetHours || 8) * 60;
-        const duration = Utils.calculateDuration(todayRecord.in, todayRecord.out || new Date());
-        
+    // Target is 8 hours 30 minutes = 510 minutes
+    const targetMinutes = 510;
+    
+    if (appState.punchIn) {
+        // Currently punched in - calculate from punch-in time
+        const duration = Utils.calculateDuration(appState.punchIn, new Date());
         percentage = (duration.totalMinutes / targetMinutes) * 100;
-        
-        if (duration.totalMinutes >= targetMinutes) {
-            color = '#B4FE61'; // Green - target met
-        } else {
-            color = '#B4FE61'; // Still green while working
-        }
+    } else if (todayRecord && todayRecord.in) {
+        // Already punched out today - use recorded duration
+        const duration = Utils.calculateDuration(todayRecord.in, todayRecord.out);
+        percentage = (duration.totalMinutes / targetMinutes) * 100;
     }
     
-    ChartRenderer.draw('doughnutChart', percentage, color);
+    // Cap percentage at 100 for visual display
+    const displayPercentage = Math.min(percentage, 100);
+    
+    ChartRenderer.draw('doughnutChart', displayPercentage, color);
 }
 
 function updateMonthInfo() {
@@ -337,7 +351,9 @@ function renderAttendanceList() {
     const isCurrentMonth = currentMonth === today.getMonth() && currentYear === today.getFullYear();
     const maxDay = isCurrentMonth ? today.getDate() : daysInMonth;
     
-    let weekendShown = false;
+    // Collect weekdays and weekends separately
+    const weekdayEntries = [];
+    const weekendEntries = [];
     
     for (let day = 1; day <= maxDay; day++) {
         const date = new Date(currentYear, currentMonth, day);
@@ -346,16 +362,38 @@ function renderAttendanceList() {
         const isWeekend = Utils.isWeekend(dateKey);
         const record = appState.records[dateKey];
         
-        // Show weekend separator before first weekend
-        if (isWeekend && !weekendShown) {
-            listContainer.appendChild(AttendanceRow.createWeekendSeparator());
-            weekendShown = true;
+        // Only include days that have attendance records OR are today
+        const hasRecord = record && (record.in || record.out);
+        
+        if (isCurrentMonth && day > today.getDate()) {
+            // Skip future dates in current month
+            continue;
         }
         
-        // Only show weekdays in the list
-        if (!isWeekend) {
-            listContainer.appendChild(AttendanceRow.create(dateKey, record, isToday, settings.targetHours));
+        if (isWeekend) {
+            if (hasRecord || isToday) {
+                weekendEntries.push({ dateKey, record, isToday, date });
+            }
+        } else {
+            if (hasRecord || isToday) {
+                weekdayEntries.push({ dateKey, record, isToday, date });
+            }
         }
+    }
+    
+    // Render weekdays first
+    weekdayEntries.forEach(entry => {
+        listContainer.appendChild(AttendanceRow.create(entry.dateKey, entry.record, entry.isToday, settings.targetHours));
+    });
+    
+    // Add weekend separator if there are weekend entries
+    if (weekendEntries.length > 0) {
+        listContainer.appendChild(AttendanceRow.createWeekendSeparator());
+        
+        // Render weekend entries
+        weekendEntries.forEach(entry => {
+            listContainer.appendChild(AttendanceRow.create(entry.dateKey, entry.record, entry.isToday, settings.targetHours));
+        });
     }
 }
 
