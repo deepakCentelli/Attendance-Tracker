@@ -13,28 +13,28 @@
     --bg-doughnut-inactive: #212528;
     --bg-green-status: #303A2E;
     --bg-red-status: #2D1F21;
-    
+
     /* Text Colors */
     --text-white: #FFFFFF;
     --text-muted: #2F3032;
     --text-gray: #888888;
-    
+
     /* Accent Colors */
     --accent-green: #B4FE61;
     --accent-red: #FF6262;
     --accent-yellow: #F4D35E;
-    
+
     /* Borders */
     --border-green: rgba(180, 254, 97, 0.3);
     --border-red: #663538;
-    
+
     /* Sizing */
     --radius-sm: 8px;
     --radius-md: 13px;
     --radius-lg: 28px;
     --radius-xl: 30px;
     --radius-full: 9999px;
-    
+
     /* Transitions */
     --transition-fast: 0.2s ease;
     --transition-normal: 0.3s ease;
@@ -56,7 +56,9 @@ body {
 }
 
 /* Utility Classes */
-.hidden { display: none !important; }
+.hidden {
+    display: none !important;
+}
 
 /* =========================================
    MAIN DASHBOARD CONTAINER
@@ -86,7 +88,7 @@ body {
    ========================================= */
 .left-section {
     width: 540px;
-    padding: 140px 80px 0 80px;
+    padding: 80px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -139,13 +141,12 @@ body {
     flex-direction: column;
     align-items: center;
     margin-top: auto;
-    margin-bottom: 80px;
 }
 
 .chart-wrapper {
     position: relative;
-    width: 340px;
-    height: 340px;
+    width: 300px;
+    height: 300px;
     margin-bottom: 40px;
 }
 
@@ -329,7 +330,7 @@ body {
 .avg-container {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: center;
 }
 
 .avg-label {
@@ -431,11 +432,12 @@ body {
 
 .att-left {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    flex-direction: row;
+    gap: 12px;
     flex: 1;
     min-width: 0;
     overflow: hidden;
+    align-items: center;
 }
 
 .att-date-badge {
@@ -450,7 +452,7 @@ body {
 }
 
 .att-day-name {
-    font-size: 20px;
+    font-size: 28px;
     font-weight: 600;
     color: var(--text-white);
     white-space: nowrap;
@@ -709,18 +711,18 @@ body {
     .app-container {
         padding: 30px;
     }
-    
+
     .dashboard-container {
         height: auto;
         min-height: auto;
         flex-direction: column;
     }
-    
+
     .left-section {
         width: 100%;
         padding: 60px 40px;
     }
-    
+
     .right-section {
         padding: 40px;
     }
@@ -730,21 +732,21 @@ body {
     .greeting-main {
         font-size: 42px;
     }
-    
+
     .chart-wrapper {
         width: 280px;
         height: 280px;
     }
-    
+
     .timer-display {
         font-size: 48px;
     }
-    
+
     .monthly-header {
         flex-wrap: wrap;
         gap: 16px;
     }
-    
+
     .attendance-item {
         height: auto;
         padding: 16px;
