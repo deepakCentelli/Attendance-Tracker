@@ -7,7 +7,7 @@ let isInitialized = false;
 async function getDB() {
     if (!dbModule) {
         try {
-            dbModule = await import('./database.js');
+            dbModule = await import('../../database.js');
         } catch (error) {
             console.error('Failed to load database module:', error);
             throw error;
