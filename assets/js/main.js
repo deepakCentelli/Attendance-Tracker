@@ -494,8 +494,6 @@ function updateTimerDisplay() {
 }
 
 function renderUI() {
-    const settings = Storage.getSettings();
-    
     // Update greeting
     document.getElementById('greeting').textContent = `Hey ${settings.name}`;
     
