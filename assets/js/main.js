@@ -6,6 +6,8 @@ let settings = null;
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let timerInterval = null;
+let dbInitialized = false;
+let liveUpdateInterval = null;
 
 // 31 motivational quotes (one for each day) - kept to 2-3 lines
 const MOTIVATIONAL_QUOTES = [
@@ -42,9 +44,16 @@ const MOTIVATIONAL_QUOTES = [
     "Work hard in silence, let success make the noise."
 ];
 
-document.addEventListener('DOMContentLoaded', () => {
-    appState = Storage.getData();
-    settings = Storage.getSettings();
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize database storage
+    dbInitialized = await Storage.init();
+    
+    if (!dbInitialized) {
+        console.warn('Database initialization failed, using fallback mode');
+    }
+    
+    appState = await Storage.getData();
+    settings = await Storage.getSettings();
     
     // Check if punch-in is from a previous day - reset if so
     checkNewDayReset();
@@ -64,10 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start timer if punched in
     if (appState.punchIn) {
         startTimer();
+        startLiveUpdates();
     }
 });
 
-function checkNewDayReset() {
+async function checkNewDayReset() {
     const todayKey = Utils.formatDateKey(new Date());
     const lastPunchIn = appState.punchIn;
     
@@ -78,7 +88,7 @@ function checkNewDayReset() {
         // If punch-in was on a different day, clear it
         if (punchInDate !== today) {
             appState.punchIn = null;
-            Storage.saveData(appState);
+            await Storage.saveData(appState);
         }
     }
 }
@@ -114,16 +124,22 @@ function setupEventListeners() {
     
     const saveEditBtn = document.getElementById('saveEditBtn');
     if (saveEditBtn) saveEditBtn.addEventListener('click', handleEditTime);
+    
+    // Edit attendance button delegation
+    document.getElementById('attendanceList').addEventListener('click', handleEditAttendanceClick);
 }
 
-function handlePunch() {
+async function handlePunch() {
     const now = new Date().toISOString();
     const todayKey = Utils.formatDateKey(new Date());
     
     if (!appState.punchIn) {
         // Punch In
         appState.punchIn = now;
+        await Storage.saveData(appState);
         showToast(`Punched In at ${Utils.formatTime12(now)}`, 'success');
+        startTimer();
+        startLiveUpdates();
     } else {
         // Punch Out
         if (!appState.records[todayKey]) {
@@ -134,14 +150,15 @@ function handlePunch() {
         appState.records[todayKey].out = now;
         appState.punchIn = null;
         
+        await Storage.saveData(appState);
         showToast(`Punched Out at ${Utils.formatTime12(now)}`, 'success');
+        stopLiveUpdates();
     }
     
-    Storage.saveData(appState);
     renderUI();
 }
 
-function handleEditTime() {
+async function handleEditTime() {
     const timeInput = document.getElementById('editTimeInput');
     const timeValue = timeInput.value;
     
@@ -153,12 +170,254 @@ function handleEditTime() {
     newPunchIn.setHours(parseInt(hours), parseInt(minutes), 0, 0);
     
     appState.punchIn = newPunchIn.toISOString();
-    Storage.saveData(appState);
+    await Storage.saveData(appState);
     renderUI();
     showToast('Start time updated', 'success');
 }
 
-function handleSaveSettings() {
+// Handle edit attendance button click
+async function handleEditAttendanceClick(e) {
+    const editBtn = e.target.closest('.edit-att-btn');
+    if (!editBtn) return;
+    
+    const dateStr = editBtn.getAttribute('data-date');
+    if (!dateStr) return;
+    
+    openEditAttendanceModal(dateStr);
+}
+
+// Open edit attendance modal
+async function openEditAttendanceModal(dateStr) {
+    const record = appState.records[dateStr];
+    const isToday = dateStr === Utils.formatDateKey(new Date());
+    const isPunchedIn = isToday && appState.punchIn !== null;
+    
+    // Create or reuse edit modal
+    let modal = document.getElementById('editAttendanceModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'editAttendanceModal';
+        modal.className = 'modal-overlay hidden';
+        modal.innerHTML = `
+            <div class="modal">
+                <h3>Edit Attendance</h3>
+                <div class="edit-date-info" style="margin-bottom: 16px; font-size: 14px; color: var(--text-gray);"></div>
+                
+                <div class="edit-type-selector">
+                    <label style="display: block; font-size: 13px; color: var(--text-gray); margin-bottom: 8px;">Day Type</label>
+                    <div style="display: flex; gap: 12px;">
+                        <button type="button" class="edit-type-btn active" data-type="working">Working Day</button>
+                        <button type="button" class="edit-type-btn" data-type="leave">Leave</button>
+                        <button type="button" class="edit-type-btn" data-type="holiday">Holiday</button>
+                    </div>
+                </div>
+                
+                <div id="workingDayFields">
+                    <label>Punch In Time</label>
+                    <input type="time" id="editPunchInTime">
+                    <label>Punch Out Time</label>
+                    <input type="time" id="editPunchOutTime">
+                </div>
+                
+                <div id="leaveHolidayFields" class="hidden" style="padding: 20px 0; text-align: center; color: var(--text-gray);">
+                    <p>Marked as <span class="edit-type-label">Leave</span></p>
+                </div>
+                
+                <div class="modal-actions">
+                    <button id="cancelEditAttendance">Cancel</button>
+                    <button id="saveEditAttendance">Save Changes</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Setup event listeners for the modal
+        document.getElementById('cancelEditAttendance').addEventListener('click', closeEditAttendanceModal);
+        
+        // Type selector buttons
+        modal.querySelectorAll('.edit-type-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                modal.querySelectorAll('.edit-type-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                const type = e.target.getAttribute('data-type');
+                const workingFields = document.getElementById('workingDayFields');
+                const leaveHolidayFields = document.getElementById('leaveHolidayFields');
+                const typeLabel = leaveHolidayFields.querySelector('.edit-type-label');
+                
+                if (type === 'working') {
+                    workingFields.classList.remove('hidden');
+                    leaveHolidayFields.classList.add('hidden');
+                } else {
+                    workingFields.classList.add('hidden');
+                    leaveHolidayFields.classList.remove('hidden');
+                    typeLabel.textContent = type === 'leave' ? 'Leave' : 'Holiday';
+                }
+            });
+        });
+        
+        document.getElementById('saveEditAttendance').addEventListener('click', saveEditedAttendance);
+    }
+    
+    // Populate modal with existing data
+    const dateInfo = modal.querySelector('.edit-date-info');
+    const dateObj = new Date(dateStr);
+    dateInfo.textContent = `${dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}`;
+    
+    const punchInInput = document.getElementById('editPunchInTime');
+    const punchOutInput = document.getElementById('editPunchOutTime');
+    
+    // Determine current type and times
+    let currentType = 'working';
+    if (record) {
+        if (record.type === 'leave') {
+            currentType = 'leave';
+        } else if (record.type === 'holiday') {
+            currentType = 'holiday';
+        }
+    }
+    
+    // Set type buttons
+    modal.querySelectorAll('.edit-type-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-type') === currentType);
+    });
+    
+    // Show/hide fields based on type
+    const workingFields = document.getElementById('workingDayFields');
+    const leaveHolidayFields = document.getElementById('leaveHolidayFields');
+    const typeLabel = leaveHolidayFields.querySelector('.edit-type-label');
+    
+    if (currentType === 'working') {
+        workingFields.classList.remove('hidden');
+        leaveHolidayFields.classList.add('hidden');
+    } else {
+        workingFields.classList.add('hidden');
+        leaveHolidayFields.classList.remove('hidden');
+        typeLabel.textContent = currentType === 'leave' ? 'Leave' : 'Holiday';
+    }
+    
+    // Set time values if available
+    if (record && record.in) {
+        punchInInput.value = new Date(record.in).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).slice(0, 5);
+    } else {
+        punchInInput.value = '09:00';
+    }
+    
+    if (record && record.out) {
+        punchOutInput.value = new Date(record.out).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).slice(0, 5);
+    } else {
+        punchOutInput.value = '18:00';
+    }
+    
+    // Store the date being edited
+    modal.dataset.editDate = dateStr;
+    modal.dataset.editType = currentType;
+    
+    // Show modal
+    modal.classList.remove('hidden');
+}
+
+function closeEditAttendanceModal() {
+    const modal = document.getElementById('editAttendanceModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+async function saveEditedAttendance() {
+    const modal = document.getElementById('editAttendanceModal');
+    if (!modal) return;
+    
+    const dateStr = modal.dataset.editDate;
+    const selectedType = modal.querySelector('.edit-type-btn.active')?.getAttribute('data-type') || 'working';
+    
+    const punchInInput = document.getElementById('editPunchInTime');
+    const punchOutInput = document.getElementById('editPunchOutTime');
+    
+    const today = new Date(dateStr);
+    
+    let newRecord = { type: selectedType };
+    
+    if (selectedType === 'working') {
+        const [inHours, inMinutes] = punchInInput.value.split(':').map(Number);
+        const [outHours, outMinutes] = punchOutInput.value.split(':').map(Number);
+        
+        const punchIn = new Date(today);
+        punchIn.setHours(inHours, inMinutes, 0, 0);
+        
+        const punchOut = new Date(today);
+        punchOut.setHours(outHours, outMinutes, 0, 0);
+        
+        newRecord.in = punchIn.toISOString();
+        newRecord.out = punchOut.toISOString();
+    } else {
+        // For leave/holiday, clear in/out times
+        newRecord.in = null;
+        newRecord.out = null;
+    }
+    
+    // Update the record
+    appState.records[dateStr] = newRecord;
+    await Storage.saveData(appState);
+    
+    closeEditAttendanceModal();
+    renderUI();
+    showToast('Attendance updated', 'success');
+}
+
+function startLiveUpdates() {
+    if (liveUpdateInterval) clearInterval(liveUpdateInterval);
+    
+    liveUpdateInterval = setInterval(() => {
+        updateTimerDisplay();
+        updateChart();
+        updateCurrentDayInList();
+    }, 1000);
+}
+
+function stopLiveUpdates() {
+    if (liveUpdateInterval) {
+        clearInterval(liveUpdateInterval);
+        liveUpdateInterval = null;
+    }
+}
+
+function updateCurrentDayInList() {
+    const todayKey = Utils.formatDateKey(new Date());
+    const listContainer = document.getElementById('attendanceList');
+    const todayItem = listContainer.querySelector('.attendance-item.today');
+    
+    if (!todayItem || !appState.punchIn) return;
+    
+    // Calculate current duration
+    const duration = Utils.calculateDuration(appState.punchIn, new Date());
+    const hours = String(duration.hours).padStart(2, '0');
+    const minutes = String(duration.minutes).padStart(2, '0');
+    
+    // Update the hours display
+    const hoursEl = todayItem.querySelector('.att-hours');
+    if (hoursEl) {
+        hoursEl.textContent = `${hours}:${minutes}`;
+        hoursEl.className = 'att-hours'; // Reset classes
+        
+        const targetMinutes = (settings.targetHours || 8) * 60;
+        if (duration.totalMinutes >= targetMinutes) {
+            hoursEl.classList.add('green');
+        } else if (duration.totalMinutes > 480 && duration.totalMinutes < targetMinutes) {
+            hoursEl.classList.add('yellow');
+        } else {
+            hoursEl.classList.add('red');
+        }
+    }
+    
+    // Update the times display
+    const timesEl = todayItem.querySelector('.att-times');
+    if (timesEl && appState.punchIn) {
+        timesEl.innerHTML = `Login: ${Utils.formatTime12(appState.punchIn)} | Logout: --:--`;
+    }
+}
+
+async function handleSaveSettings() {
     const usernameInput = document.getElementById('usernameInput');
     const targetHoursInput = document.getElementById('targetHoursInput');
     const username = usernameInput.value.trim();
@@ -172,7 +431,7 @@ function handleSaveSettings() {
         settings.targetHours = targetHours;
     }
     
-    Storage.saveSettings(settings);
+    await Storage.saveSettings(settings);
     closeModal();
     renderUI();
     showToast('Settings saved', 'success');
@@ -249,10 +508,13 @@ function renderUI() {
     if (appState.punchIn) {
         punchBtn.classList.add('hidden');
         punchOutBtn.classList.remove('hidden');
-        punchStatus.textContent = 'Punched In';
+        // Show punch in time alongside status
+        const punchInTime = Utils.formatTime12(appState.punchIn);
+        punchStatus.innerHTML = `Punched In<br><span style="font-size: 12px; font-weight: 400; opacity: 0.8;">${punchInTime}</span>`;
         punchStatus.className = 'status-badge';
         editSection.classList.remove('hidden');
         startTimer();
+        startLiveUpdates();
     } else {
         punchBtn.classList.remove('hidden');
         punchOutBtn.classList.add('hidden');
@@ -260,6 +522,7 @@ function renderUI() {
         punchStatus.className = 'status-badge out';
         editSection.classList.add('hidden');
         if (timerInterval) clearInterval(timerInterval);
+        stopLiveUpdates();
     }
     
     // Update chart
@@ -383,7 +646,7 @@ function renderAttendanceList() {
     
     // Render weekdays first
     weekdayEntries.forEach(entry => {
-        listContainer.appendChild(AttendanceRow.create(entry.dateKey, entry.record, entry.isToday, settings.targetHours));
+        listContainer.appendChild(AttendanceRow.create(entry.dateKey, entry.record, entry.isToday, settings.targetHours, appState.punchIn));
     });
     
     // Add weekend separator if there are weekend entries
@@ -392,7 +655,7 @@ function renderAttendanceList() {
         
         // Render weekend entries
         weekendEntries.forEach(entry => {
-            listContainer.appendChild(AttendanceRow.create(entry.dateKey, entry.record, entry.isToday, settings.targetHours));
+            listContainer.appendChild(AttendanceRow.create(entry.dateKey, entry.record, entry.isToday, settings.targetHours, appState.punchIn));
         });
     }
 }
